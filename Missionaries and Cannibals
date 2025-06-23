@@ -1,0 +1,62 @@
+#include <iostream>
+#include <queue>
+#include <set>
+using namespace std;
+
+struct State {
+    int M, C, B; // Missionaries, Cannibals, Boat side (0 = left, 1 = right)
+    string path;
+};
+
+bool isValid(int M, int C) {
+    return (M == 0 || M >= C) && (3 - M == 0 || (3 - M) >= (3 - C));
+}
+
+void bfs() {
+    queue<State> q;
+    set<tuple<int, int, int>> visited;
+
+    q.push({3, 3, 0, ""});
+    visited.insert({3, 3, 0});
+
+    int moves[][2] = {
+        {2, 0}, {0, 2}, {1, 1}, {1, 0}, {0, 1} // Valid passenger combinations
+    };
+
+    while (!q.empty()) {
+        State curr = q.front(); q.pop();
+
+        if (curr.M == 0 && curr.C == 0 && curr.B == 1) {
+            cout << "Solution found:\n" << curr.path << "\n";
+            return;
+        }
+
+        for (auto move : moves) {
+            int m = move[0], c = move[1];
+            int newM, newC, newB = 1 - curr.B;
+
+            if (curr.B == 0) { // Boat on left
+                newM = curr.M - m;
+                newC = curr.C - c;
+            } else { // Boat on right
+                newM = curr.M + m;
+                newC = curr.C + c;
+            }
+
+            if (newM < 0 || newC < 0 || newM > 3 || newC > 3) continue;
+            if (!isValid(newM, newC)) continue;
+            if (visited.count({newM, newC, newB})) continue;
+
+            visited.insert({newM, newC, newB});
+            string step = "Move " + to_string(m) + "M, " + to_string(c) + "C to " + (newB ? "right\n" : "left\n");
+            q.push({newM, newC, newB, curr.path + step});
+        }
+    }
+
+    cout << "No solution found.\n";
+}
+
+int main() {
+    bfs();
+    return 0;
+}
