@@ -1,0 +1,60 @@
+#include <iostream>
+#include <queue>
+#include <set>
+using namespace std;
+
+struct State {
+    int jug1, jug2;
+    string path;
+};
+
+void bfs(int cap1, int cap2, int target) {
+    set<pair<int, int>> visited;
+    queue<State> q;
+
+    q.push({0, 0, ""});
+    visited.insert({0, 0});
+
+    while (!q.empty()) {
+        State curr = q.front();
+        q.pop();
+
+        int x = curr.jug1;
+        int y = curr.jug2;
+
+        // If either jug has the target amount
+        if (x == target || y == target) {
+            cout << "Solution found:\n";
+            cout << curr.path << "\n";
+            cout << "Final state: (" << x << ", " << y << ")\n";
+            return;
+        }
+
+        // All possible next moves
+        vector<State> nextStates = {
+            {cap1, y, curr.path + "Fill Jug1\n"},
+            {x, cap2, curr.path + "Fill Jug2\n"},
+            {0, y, curr.path + "Empty Jug1\n"},
+            {x, 0, curr.path + "Empty Jug2\n"},
+            {min(x + y, cap1), (x + y > cap1 ? x + y - cap1 : 0), curr.path + "Pour Jug2 -> Jug1\n"},
+            {(x + y > cap2 ? x + y - cap2 : 0), min(x + y, cap2), curr.path + "Pour Jug1 -> Jug2\n"}
+        };
+
+        for (auto state : nextStates) {
+            if (visited.find({state.jug1, state.jug2}) == visited.end()) {
+                visited.insert({state.jug1, state.jug2});
+                q.push(state);
+            }
+        }
+    }
+
+    cout << "No solution possible.\n";
+}
+
+int main() {
+    int jug1 = 4, jug2 = 3, target = 2;
+
+    bfs(jug1, jug2, target);
+
+    return 0;
+}
